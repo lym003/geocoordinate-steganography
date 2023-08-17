@@ -1,114 +1,42 @@
-%stc嵌入小数点后第7位，第8位至最后用mlsb算法
+% The significant digit of geo-coordinate is more than 8
+% construct cover element sequences
+% s_p is the geo-coordinate sequence; point_num is the number of digits; bp is the embedding ratio;
+% dig_num is used to store the digit number of each part in the geo-coordinate
+    stc_len = 1;
+    lsb_len = fra_len - 7;
+    dig_num(,1) = int_len; % int_len is the digit number of integer part
+    dig_num(,2) = fra_len; % fra_len is the digit number of fraction part
+    stc_len = 1; % stc_len is the digit number of SiSDPs
+    dig_num(,3) = stc_len; 
+    lsb_len = fra_len - 7; % lsb_len is the digit number of LSDPs
+    dig_num(,4) = lsb_len;
+    lsb_sum = lsb_sum + lsb_len;
 
-% clc;
-% clear;
-
-function ed = stc_lsb_ed(s_digit,p,msg) % s_digit是坐标的有效数字；p是坐标序列；msg是二进制秘密信息字符串
-
-switch s_digit %坐标的有效数字决定最大嵌入比率；
-    case '9'
-        bp = 0.51;
-    case '10'
-        bp = 1.00;
-    case '11'
-        bp = 1.00;
-    case '12'
-        bp = 1.00;
-    case '13'
-        bp = 1.00;
-    case '14'
-        bp = 0.99;
-    case '15'
-        bp = 0.99;
-    case '16'
-        bp = 1.00;
-end
-
-[row_num,col_num] = size(p);
-s_p = p;    %cell类型stego坐标点
-cover_p = zeros(row_num,col_num);
-[~,m_len] = size(msg);
-h = 10;
-dig_num = zeros(row_num*col_num,4);
-s = 1;  %坐标点数量
-lay_lsb = 0;   %载密矩阵中lsb的列数
-lsb_sum = 0;    %lsb位平面总和
-for i=1:row_num
-    for j=1:col_num
-        point_str = s_p{i,j};
-        point_len = length(point_str);
-        point_dec = str2double(s_p{i,j});
-        cover_p(i,j) = str2double(s_p{i,j});
-        if(point_dec < 0)
-           point_num = point_len - 2;  %有效位数减去正负号和小数点
-           point_abs = abs(point_dec);
-        else
-           point_num = point_len - 1;
-           point_abs = point_dec;
+% the embedding process
+% the MLSBR algorithm
+    dec_str = int2str(bin2dec(msg(m_start:m_start+52)));
+    dec_str_len = length(dec_str);
+    if dec_str_len<16   %53位二进制表示十进制位数不足16位的，前面补足0
+        add_len = 16 - dec_str_len;
+        for i=1:add_len
+            dec_str = ['0',dec_str];
         end
-        int_len = length(mat2str(floor(point_abs)));
-        fra_len = point_num - int_len;
-        if fra_len - 6>0
-            stc_len = 1;
-            lsb_len = fra_len - 7;
-        else
-            stc_len = 0;
-            lsb_len = 0;
-        end
-        dig_num(s,1) = int_len;
-        dig_num(s,2) = fra_len;
-        dig_num(s,3) = stc_len;
-        dig_num(s,4) = lsb_len;
-        if lay_lsb<lsb_len
-            lay_lsb = lsb_len;
-        end
-        lsb_sum = lsb_sum + lsb_len;
-        s = s + 1;
     end
-end
+    lsb_embstr = [lsb_embstr,dec_str];    %将lsb每一组载密（16位）合成总的字符串
+        
+    lsb_remain = mod(lsb_sum,16);  %16个十进制一组嵌入后，lsb部分不足一组的十进制位数
+    lsb_remain_bin = floor(log2(10^lsb_remain-1));
+    lsb_remain_dec = int2str(bin2dec(msg(m_start:m_start+lsb_remain_bin-1)));
+    if length(lsb_remain_dec)<lsb_remain
+        add_len = lsb_remain - length(lsb_remain_dec);
+        for i=1:add_len
+            lsb_remain_dec = ['0',lsb_remain_dec];
+        end
+    end
+    lsb_embstr = [lsb_embstr,lsb_remain_dec];
 
-m_start = 1;    %秘密消息嵌入移动指针
+% the STC adaptive algorithm
 
-%每次用53位二进制数，最高可表示16位十进制数。将十进制按高位到低位替换至lsb位平面。
-r = floor(lsb_sum/16);  %得到lsb总位平面含有多少组16个十进制；
-lsb_remain = mod(lsb_sum,16);  %16个十进制一组嵌入后，lsb部分不足一组的十进制位数
-lsb_embstr = '';
-flag = 1;
-while flag&&m_start<m_len
-    if r
-        if m_start+52<=m_len
-            dec_str = int2str(bin2dec(msg(m_start:m_start+52)));
-            m_start = m_start + 53;
-        else
-            dec_str = int2str(bin2dec(msg(m_start:m_len)));
-            m_start = m_len + 1;
-        end
-        dec_str_len = length(dec_str);
-        if dec_str_len<16   %53位二进制表示十进制位数不足16位的，前面补足0
-            add_len = 16 - dec_str_len;
-            for i=1:add_len
-                dec_str = ['0',dec_str];
-            end
-        end
-        lsb_embstr = [lsb_embstr,dec_str];    %将lsb每一组载密（16位）合成总的字符串
-        r = r - 1;
-    elseif r==0&&length(lsb_embstr)<lsb_sum
-        lsb_remain_bin = floor(log2(10^lsb_remain-1));
-        if m_start+lsb_remain_bin-1>m_len
-            lsb_remain_bin = m_len-m_start+1;
-            lsb_remain_dec = int2str(bin2dec(msg(m_start:m_len)));
-        else
-            lsb_remain_dec = int2str(bin2dec(msg(m_start:m_start+lsb_remain_bin-1)));
-        end
-        if length(lsb_remain_dec)<lsb_remain
-            add_len = lsb_remain - length(lsb_remain_dec);
-            for i=1:add_len
-                lsb_remain_dec = ['0',lsb_remain_dec];
-            end
-        end
-        lsb_embstr = [lsb_embstr,lsb_remain_dec];
-        m_start = m_start + lsb_remain_bin;
-    else  %在stc部分嵌入
         stc_emb_len = floor(stc_sum*bp);   %stc部分可以嵌入的秘密信息长度
         if m_start+stc_emb_len-1<=m_len
             emb_len = stc_emb_len;
