@@ -1,11 +1,11 @@
-%stcÇ¶ÈëĞ¡ÊıµãºóµÚ7Î»£¬µÚ8Î»ÖÁ×îºóÓÃmlsbËã·¨
+%stcåµŒå…¥å°æ•°ç‚¹åç¬¬7ä½ï¼Œç¬¬8ä½è‡³æœ€åç”¨mlsbç®—æ³•
 
 % clc;
 % clear;
 
-function ed = stc_lsb_ed(s_digit,p,msg)
+function ed = stc_lsb_ed(s_digit,p,msg) % s_digitæ˜¯åæ ‡çš„æœ‰æ•ˆæ•°å­—ï¼›pæ˜¯åæ ‡åºåˆ—ï¼›msgæ˜¯äºŒè¿›åˆ¶ç§˜å¯†ä¿¡æ¯å­—ç¬¦ä¸²
 
-switch s_digit %×ø±êµÄÓĞĞ§Êı×Ö¾ö¶¨×î´óÇ¶Èë±ÈÂÊ£»
+switch s_digit %åæ ‡çš„æœ‰æ•ˆæ•°å­—å†³å®šæœ€å¤§åµŒå…¥æ¯”ç‡ï¼›
     case '9'
         bp = 0.51;
     case '10'
@@ -23,19 +23,16 @@ switch s_digit %×ø±êµÄÓĞĞ§Êı×Ö¾ö¶¨×î´óÇ¶Èë±ÈÂÊ£»
     case '16'
         bp = 1.00;
 end
-% if s_digit
-%     bp = 0.50;
-% end
 
 [row_num,col_num] = size(p);
-s_p = p;    %cellÀàĞÍstego×ø±êµã
+s_p = p;    %cellç±»å‹stegoåæ ‡ç‚¹
 cover_p = zeros(row_num,col_num);
 [~,m_len] = size(msg);
 h = 10;
 dig_num = zeros(row_num*col_num,4);
-s = 1;  %×ø±êµãÊıÁ¿
-lay_lsb = 0;   %ÔØÃÜ¾ØÕóÖĞlsbµÄÁĞÊı
-lsb_sum = 0;    %lsbÎ»Æ½Ãæ×ÜºÍ
+s = 1;  %åæ ‡ç‚¹æ•°é‡
+lay_lsb = 0;   %è½½å¯†çŸ©é˜µä¸­lsbçš„åˆ—æ•°
+lsb_sum = 0;    %lsbä½å¹³é¢æ€»å’Œ
 for i=1:row_num
     for j=1:col_num
         point_str = s_p{i,j};
@@ -43,7 +40,7 @@ for i=1:row_num
         point_dec = str2double(s_p{i,j});
         cover_p(i,j) = str2double(s_p{i,j});
         if(point_dec < 0)
-           point_num = point_len - 2;  %ÓĞĞ§Î»Êı¼õÈ¥Õı¸ººÅºÍĞ¡Êıµã
+           point_num = point_len - 2;  %æœ‰æ•ˆä½æ•°å‡å»æ­£è´Ÿå·å’Œå°æ•°ç‚¹
            point_abs = abs(point_dec);
         else
            point_num = point_len - 1;
@@ -70,14 +67,11 @@ for i=1:row_num
     end
 end
 
-m_start = 1;    %ÃØÃÜÏûÏ¢Ç¶ÈëÒÆ¶¯Ö¸Õë
-% lay_back = 1;  %ÄæĞòÎ»Æ½Ãæ
-% s_num = 1;  %µÚs_num¸öÔØÌå
-stc_sum = row_num*col_num;    %stcÎ»Æ½Ãæ×ÜºÍ
-% flag = 1;
-%Ã¿´ÎÓÃ53Î»¶ş½øÖÆÊı£¬×î¸ß¿É±íÊ¾16Î»Ê®½øÖÆÊı¡£½«Ê®½øÖÆ°´¸ßÎ»µ½µÍÎ»Ìæ»»ÖÁlsbÎ»Æ½Ãæ¡£
-r = floor(lsb_sum/16);  %µÃµ½lsb×ÜÎ»Æ½Ãæº¬ÓĞ¶àÉÙ×é16¸öÊ®½øÖÆ£»
-lsb_remain = mod(lsb_sum,16);  %16¸öÊ®½øÖÆÒ»×éÇ¶Èëºó£¬lsb²¿·Ö²»×ãÒ»×éµÄÊ®½øÖÆÎ»Êı
+m_start = 1;    %ç§˜å¯†æ¶ˆæ¯åµŒå…¥ç§»åŠ¨æŒ‡é’ˆ
+
+%æ¯æ¬¡ç”¨53ä½äºŒè¿›åˆ¶æ•°ï¼Œæœ€é«˜å¯è¡¨ç¤º16ä½åè¿›åˆ¶æ•°ã€‚å°†åè¿›åˆ¶æŒ‰é«˜ä½åˆ°ä½ä½æ›¿æ¢è‡³lsbä½å¹³é¢ã€‚
+r = floor(lsb_sum/16);  %å¾—åˆ°lsbæ€»ä½å¹³é¢å«æœ‰å¤šå°‘ç»„16ä¸ªåè¿›åˆ¶ï¼›
+lsb_remain = mod(lsb_sum,16);  %16ä¸ªåè¿›åˆ¶ä¸€ç»„åµŒå…¥åï¼Œlsbéƒ¨åˆ†ä¸è¶³ä¸€ç»„çš„åè¿›åˆ¶ä½æ•°
 lsb_embstr = '';
 flag = 1;
 while flag&&m_start<m_len
@@ -90,13 +84,13 @@ while flag&&m_start<m_len
             m_start = m_len + 1;
         end
         dec_str_len = length(dec_str);
-        if dec_str_len<16   %53Î»¶ş½øÖÆ±íÊ¾Ê®½øÖÆÎ»Êı²»×ã16Î»µÄ£¬Ç°Ãæ²¹×ã0
+        if dec_str_len<16   %53ä½äºŒè¿›åˆ¶è¡¨ç¤ºåè¿›åˆ¶ä½æ•°ä¸è¶³16ä½çš„ï¼Œå‰é¢è¡¥è¶³0
             add_len = 16 - dec_str_len;
             for i=1:add_len
                 dec_str = ['0',dec_str];
             end
         end
-        lsb_embstr = [lsb_embstr,dec_str];    %½«lsbÃ¿Ò»×éÔØÃÜ£¨16Î»£©ºÏ³É×ÜµÄ×Ö·û´®
+        lsb_embstr = [lsb_embstr,dec_str];    %å°†lsbæ¯ä¸€ç»„è½½å¯†ï¼ˆ16ä½ï¼‰åˆæˆæ€»çš„å­—ç¬¦ä¸²
         r = r - 1;
     elseif r==0&&length(lsb_embstr)<lsb_sum
         lsb_remain_bin = floor(log2(10^lsb_remain-1));
@@ -114,21 +108,21 @@ while flag&&m_start<m_len
         end
         lsb_embstr = [lsb_embstr,lsb_remain_dec];
         m_start = m_start + lsb_remain_bin;
-    else  %ÔÚstc²¿·ÖÇ¶Èë
-        stc_emb_len = floor(stc_sum*bp);   %stc²¿·Ö¿ÉÒÔÇ¶ÈëµÄÃØÃÜĞÅÏ¢³¤¶È
+    else  %åœ¨stcéƒ¨åˆ†åµŒå…¥
+        stc_emb_len = floor(stc_sum*bp);   %stcéƒ¨åˆ†å¯ä»¥åµŒå…¥çš„ç§˜å¯†ä¿¡æ¯é•¿åº¦
         if m_start+stc_emb_len-1<=m_len
             emb_len = stc_emb_len;
         else
-            emb_len = m_len-m_start+1;  %Ê£ÓàÎ»ÊıĞ¡ÓÚ¿ÉÇ¶ÃØÃÜĞÅÏ¢³¤¶È
+            emb_len = m_len-m_start+1;  %å‰©ä½™ä½æ•°å°äºå¯åµŒç§˜å¯†ä¿¡æ¯é•¿åº¦
         end
-        [cover,costs] = extra_c(p,dig_num,cover_p,row_num,col_num,stc_sum);   %ÌáÈ¡stc²¿·ÖÔØÌå
+        [cover,costs] = extra_c(p,dig_num,cover_p,row_num,col_num,stc_sum);   %æå–stcéƒ¨åˆ†è½½ä½“
         for j=1:emb_len
             stc_m(j) = uint8(str2double(msg(m_start+j-1)));
         end
         [d stego n_msg_bits l] = stc_pm1_pls_embed(cover, costs, stc_m, h); % embed message
         for j=1:emb_len
             if stego(j)<0 || stego(j)>9
-                fprintf('stego³¬³ö0-9£¡\n');
+                fprintf('stegoè¶…å‡º0-9ï¼\n');
             end
         end
         m_start = m_start + emb_len;
@@ -136,10 +130,10 @@ while flag&&m_start<m_len
         flag = 0;
     end
 end
-%fprintf('Êµ¼ÊÇ¶Èë%dÎ»£¬',m_start-1);
-fprintf('µ¥Î»×ø±êÇ¶Èë%.2fÎ»£¬',(m_start-1)/row_num/col_num);
+%fprintf('å®é™…åµŒå…¥%dä½ï¼Œ',m_start-1);
+fprintf('å•ä½åæ ‡åµŒå…¥%.2fä½ï¼Œ',(m_start-1)/row_num/col_num);
 
-%¸üĞÂÔØÃÜ×ø±êµã
+%æ›´æ–°è½½å¯†åæ ‡ç‚¹
 stc_embstr = '';
 if exist('stego','var')
     for i=1:stc_sum
@@ -148,7 +142,7 @@ if exist('stego','var')
 end
 stego_str = [lsb_embstr,stc_embstr];
 stego_len = length(stego_str);
-point = 1;  %ÔØÃÜÔªËØ£¨lsb+stc£©ĞòÁĞÖĞÔªËØĞòºÅ
+point = 1;  %è½½å¯†å…ƒç´ ï¼ˆlsb+stcï¼‰åºåˆ—ä¸­å…ƒç´ åºå·
 lay = 1;
 w = 1;
 while point<=stego_len&&lay<=lay_lsb
@@ -170,7 +164,7 @@ while point<=stego_len&&lay<=lay_lsb
     w = 1;
     lay = lay + 1;
 end
-if point<=stego_len %¸üĞÂstc²¿·Ö
+if point<=stego_len %æ›´æ–°stcéƒ¨åˆ†
     w = 1;
     for i=1:row_num
         for j=1:col_num
@@ -186,13 +180,14 @@ if point<=stego_len %¸üĞÂstc²¿·Ö
 end
 stego_p = str2double(s_p);
 
-%ÌáÈ¡lsb²¿·ÖÇ¶ÈëµÄÃØÃÜÏûÏ¢
-ext_len = 1;  %ÌáÈ¡ÃØÃÜÏûÏ¢³¤¶È
+%ä»å…±äº«å¹³å°ä¸‹è½½åœ°ç†æ•°æ®æ–‡ä»¶ï¼Œæå–ç»çº¬åº¦åæ ‡å¹¶é¢„å¤„ç†ï¼Œæ ¹æ®å…±äº«å‚æ•°æå–ä¿¡æ¯ï¼›
+%æå–lsbéƒ¨åˆ†åµŒå…¥çš„ç§˜å¯†æ¶ˆæ¯
+ext_len = 1;  %æå–ç§˜å¯†æ¶ˆæ¯é•¿åº¦
 str_lsb = '';
 dec_msg = '';
-k = 1;  %Î»Æ½ÃæĞòºÅ
-n = 1;  %lsbÌáÈ¡ÔØÃÜĞòºÅ
-c = 1;  %ÔØÌåĞòºÅ
+k = 1;  %ä½å¹³é¢åºå·
+n = 1;  %lsbæå–è½½å¯†åºå·
+c = 1;  %è½½ä½“åºå·
 while k<=lay_lsb&&n<=stego_len
     for i=1:row_num
         for j=1:col_num
@@ -211,7 +206,7 @@ while k<=lay_lsb&&n<=stego_len
     c = 1;
     k = k + 1;
 end
-dec_point = 1;  %ÌáÈ¡µÄlsb²¿·ÖÊ®½øÖÆÊıĞòÁĞ£¬Ã¿16Î»×ªÎª53Î»¶ş½øÖÆ¡£
+dec_point = 1;  %æå–çš„lsbéƒ¨åˆ†åè¿›åˆ¶æ•°åºåˆ—ï¼Œæ¯16ä½è½¬ä¸º53ä½äºŒè¿›åˆ¶ã€‚
 while dec_point<n
     if dec_point+15<n&&ext_len+52<m_start
         dec = str2num(dec_msg(dec_point:dec_point+15));
@@ -219,17 +214,16 @@ while dec_point<n
         str_lsb = [str_lsb,bin_str];
         dec_point = dec_point + 16;
         if ~strcmp(str_lsb(ext_len:ext_len+52),msg(ext_len:ext_len+52))
-            fprintf('±¾¶ÎÃØÃÜÏûÏ¢ÌáÈ¡´íÎó£¡');
+            fprintf('æœ¬æ®µç§˜å¯†æ¶ˆæ¯æå–é”™è¯¯ï¼');
         end
         ext_len = ext_len + 53;
     elseif dec_point+15<n
-%         t = m_start - ext_len;
         dec = str2num(dec_msg(dec_point:dec_point+15));
         bin_str = dec2bin(dec,m_start - ext_len);
         str_lsb = [str_lsb,bin_str];
         dec_point = dec_point + 16;
         if ~strcmp(str_lsb(ext_len:m_start-1),msg(ext_len:m_start-1))
-            fprintf('±¾¶ÎÃØÃÜÏûÏ¢ÌáÈ¡´íÎó£¡');
+            fprintf('æœ¬æ®µç§˜å¯†æ¶ˆæ¯æå–é”™è¯¯ï¼');
         end
         ext_len = m_start;
     else
@@ -242,7 +236,7 @@ while dec_point<n
         str_lsb = [str_lsb,bin_str];
         dec_point = n;
         if ~strcmp(str_lsb(ext_len:ext_len + bin_rem-1),msg(ext_len:ext_len + bin_rem-1))
-            fprintf('±¾¶ÎÃØÃÜÏûÏ¢ÌáÈ¡´íÎó£¡');
+            fprintf('æœ¬æ®µç§˜å¯†æ¶ˆæ¯æå–é”™è¯¯ï¼');
         end
         ext_len = ext_len + bin_rem;
     end
@@ -251,7 +245,7 @@ end
 for j=1:ext_len-1
     extr_msg(j) = uint8(str2double(str_lsb(j)));
 end
-%ÌáÈ¡lsb²¿·ÖÇ¶ÈëµÄÃØÃÜÏûÏ¢
+%æå–lsbéƒ¨åˆ†åµŒå…¥çš„ç§˜å¯†æ¶ˆæ¯
 
 error_bit = 0;
 for j=1:(m_start-1)
@@ -260,14 +254,14 @@ for j=1:(m_start-1)
     end
 end
 if error_bit==0
-    fprintf('ÃØÃÜÏûÏ¢ÌáÈ¡ÕıÈ·£¡');
+    fprintf('ç§˜å¯†æ¶ˆæ¯æå–æ­£ç¡®ï¼');
 else
     error_rate = error_bit/(m_start-1)*100;
-    fprintf('ÃØÃÜÏûÏ¢ÌáÈ¡´íÎó±ÈÌØÂÊÎª%.2f%%,',error_rate);
+    fprintf('ç§˜å¯†æ¶ˆæ¯æå–é”™è¯¯æ¯”ç‰¹ç‡ä¸º%.2f%%,',error_rate);
 end
 
 psnr = coord_psnr(cover_p,stego_p,row_num,col_num,180,90);
-fprintf('PSNRÎª%.2f,',psnr);
+fprintf('PSNRä¸º%.2f,',psnr);
 ed = Tra_ed(cover_p,stego_p,row_num);
 
 end
@@ -283,18 +277,12 @@ function [cover,costs] = extra_c(cell_p,dig_num,p,row_num,col_num,stc_sum)
             else
                 value = 0;
             end
-%             if p(i,j)<0
-%                abs_p = abs(p(i,j));
-%             else
-%                abs_p = p(i,j);
-%             end
-%             value = mod(floor(abs_p*10^7),10);  %Ö±½ÓÌáÈ¡Ğ¡ÊıµãºóµÚ7Î»
-            cover(1,s) = int32(value); %Êı×Ö·ÅÈëÔØÌå¿â
-            if value==0 || value==9    %Êı×Ö0ºÍ9£¬²»Ç¶Èë¡£
+            cover(1,s) = int32(value); %æ•°å­—æ”¾å…¥è½½ä½“åº“
+            if value==0 || value==9    %æ•°å­—0å’Œ9ï¼Œä¸åµŒå…¥ã€‚
                costs(:,s) = [1e+5 0 1e+5];
             else
-               costs(1,s) = emb_distortion(p,7,i,j,-1);   %+1Ç¶ÈëÊ§Õæ´ú¼Û
-               costs(3,s) = emb_distortion(p,7,i,j,1);   %-1Ç¶ÈëÊ§Õæ´ú¼Û
+               costs(1,s) = emb_distortion(p,7,i,j,-1);   %+1åµŒå…¥å¤±çœŸä»£ä»·
+               costs(3,s) = emb_distortion(p,7,i,j,1);   %-1åµŒå…¥å¤±çœŸä»£ä»·
             end
             s = s + 1;
         end
@@ -303,7 +291,7 @@ end
        
 
 function cost = emb_distortion(p,stc_k,r_num,c_num,sg)
-    a = 0.8;    %µ÷½Ú²ÎÊı
+    a = 0.8;    %è°ƒèŠ‚å‚æ•°
     if(p(r_num,c_num)<0)
         abs_p = abs(p(r_num,c_num));
         sign = -1;
@@ -313,7 +301,7 @@ function cost = emb_distortion(p,stc_k,r_num,c_num,sg)
     end
     new = sign*(abs_p + sg * 10^(-stc_k));
     if(mod(c_num,2) == 1)
-        point_emb = [new p(r_num,2)];   %-1Ç¶ÈëºóµÄĞÂ×ø±êµã
+        point_emb = [new p(r_num,2)];   %-1åµŒå…¥åçš„æ–°åæ ‡ç‚¹
     else
         point_emb = [p(r_num,1) new];
     end
@@ -324,20 +312,20 @@ function cost = emb_distortion(p,stc_k,r_num,c_num,sg)
         e = p(r_num+1,:) - point_emb;
         x = dot(d,e);
         y = sqrt(sum(d.^2)*sum(e.^2));
-        sigma = acos(x/y*a);  %Ç¶ÈëºóĞÂ¾ÉÏòÁ¿¼Ğ½Ç£¨Óëºó×ø±ê£©»¡¶ÈÖÆ
+        sigma = acos(x/y*a);  %åµŒå…¥åæ–°æ—§å‘é‡å¤¹è§’ï¼ˆä¸ååæ ‡ï¼‰å¼§åº¦åˆ¶
         cost = rad2deg(sigma);
     elseif(r_num == p_len)
         b = p(r_num-1,:) - p(r_num,:);
         c = p(r_num-1,:) - point_emb;
-        sigma = acos(dot(b,c)/sqrt(sum(b.^2)*sum(c.^2))*a); %Ç¶ÈëºóĞÂ¾ÉÏòÁ¿¼Ğ½Ç£¨ÓëÇ°×ø±ê£©»¡¶ÈÖÆ
+        sigma = acos(dot(b,c)/sqrt(sum(b.^2)*sum(c.^2))*a); %åµŒå…¥åæ–°æ—§å‘é‡å¤¹è§’ï¼ˆä¸å‰åæ ‡ï¼‰å¼§åº¦åˆ¶
         cost = rad2deg(sigma);
     else
         b = p(r_num-1,:) - p(r_num,:);
         c = p(r_num-1,:) - point_emb;
-        sigma_front = acos(dot(b,c)/sqrt(sum(b.^2)*sum(c.^2))*a); %Ç¶ÈëºóĞÂ¾ÉÏòÁ¿¼Ğ½Ç£¨ÓëÇ°×ø±ê£©»¡¶ÈÖÆ
+        sigma_front = acos(dot(b,c)/sqrt(sum(b.^2)*sum(c.^2))*a); %åµŒå…¥åæ–°æ—§å‘é‡å¤¹è§’ï¼ˆä¸å‰åæ ‡ï¼‰å¼§åº¦åˆ¶
         d = p(r_num+1,:) - p(r_num,:);
         e = p(r_num+1,:) - point_emb;
-        sigma_back = acos(dot(d,e)/sqrt(sum(d.^2)*sum(e.^2))*a);  %Ç¶ÈëºóĞÂ¾ÉÏòÁ¿¼Ğ½Ç£¨Óëºó×ø±ê£©»¡¶ÈÖÆ
+        sigma_back = acos(dot(d,e)/sqrt(sum(d.^2)*sum(e.^2))*a);  %åµŒå…¥åæ–°æ—§å‘é‡å¤¹è§’ï¼ˆä¸ååæ ‡ï¼‰å¼§åº¦åˆ¶
         cost = rad2deg(sigma_front + sigma_back);
     end
 end
