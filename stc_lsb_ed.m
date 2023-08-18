@@ -1,6 +1,6 @@
 % The significant digit of geo-coordinate is more than 8
 % construct cover element sequences
-% s_p is the geo-coordinate sequence; point_num is the number of digits;
+% s_p is the geo-coordinate sequence; point_num is the number of digits; msg is the secret messages after encrypting
 % dig_num is used to store the digit number of each part in the geo-coordinate
     stc_len = 1;
     lsb_len = fra_len - 7;
@@ -47,170 +47,78 @@
 
 % update geo-coordinate after embedding process
 stego_str = [lsb_embstr,stc_embstr];
-coord_str = s_p{i,j};
-
-
-        m_start = m_start + emb_len;
-        extr_msg(m_start-emb_len:m_start-1) = stc_ml_extract(stego, n_msg_bits, h); % extract message
-        flag = 0;
-    end
-end
-%fprintf('实际嵌入%d位，',m_start-1);
-fprintf('单位坐标嵌入%.2f位，',(m_start-1)/row_num/col_num);
-
-
-
 stego_len = length(stego_str);
-point = 1;  %载密元素（lsb+stc）序列中元素序号
-lay = 1;
-w = 1;
-while point<=stego_len&&lay<=lay_lsb
+while point<=stego_len
+    point = 1;  %载密元素（lsb+stc）序列中元素序号
     for i=1:row_num
         for j=1:col_num
-            if point<=stego_len&&lay<=dig_num(w,4)
-                coord_str = s_p{i,j};
-                coord_str(end-lay+1) = stego_str(point);
-                s_p{i,j} = coord_str;
-                point = point + 1;
-                w = w + 1;
-            elseif lay>dig_num(w,4)
-                w = w + 1;
-            else 
-                break;
-            end
+            coord_str = s_p{i,j};
+            coord_str(end_plane-lay+1) = stego_str(point);  % end_plane is the last digit plane of coord_str; lay is the number of RDPs
+            s_p{i,j} = coord_str;
+            point = point + 1;
         end
     end
-    w = 1;
     lay = lay + 1;
 end
-if point<=stego_len %更新stc部分
-    w = 1;
+        
+% the extracting process
+% stego_point is the processed point sequences from geographic data file
+% extracting messages from LSDPs
+k = 1; 
+n = 1;  
+while k <= lay_mlsb  % lay_mlsb is the number of LSDPs
     for i=1:row_num
         for j=1:col_num
-            if dig_num(w,3) == 1
-                coord_str = s_p{i,j};
-                coord_str(end-dig_num(w,4)) = stego_str(point);
-                s_p{i,j} = coord_str;
-            end
-            point = point + 1;
-            w = w + 1;
+            ext_point = stego_point{i,j};
+            dec_msg(n) = ext_point(end_plane-k+1);
+            n = n + 1;
         end
     end
-end
-stego_p = str2double(s_p);
-
-%从共享平台下载地理数据文件，提取经纬度坐标并预处理，根据共享参数提取信息；
-%提取lsb部分嵌入的秘密消息
-ext_len = 1;  %提取秘密消息长度
-str_lsb = '';
-dec_msg = '';
-k = 1;  %位平面序号
-n = 1;  %lsb提取载密序号
-c = 1;  %载体序号
-while k<=lay_lsb&&n<=stego_len
-    for i=1:row_num
-        for j=1:col_num
-            if k<=dig_num(c,4)&&n<=stego_len
-                ext_point = s_p{i,j};
-                dec_msg(n) = ext_point(end-k+1);
-                n = n + 1;
-                c = c + 1;
-            elseif n<=stego_len
-                c = c + 1;
-            else 
-                 break;   
-            end
-        end
-    end
-    c = 1;
     k = k + 1;
 end
-dec_point = 1;  %提取的lsb部分十进制数序列，每16位转为53位二进制。
-while dec_point<n
-    if dec_point+15<n&&ext_len+52<m_start
-        dec = str2num(dec_msg(dec_point:dec_point+15));
-        bin_str = dec2bin(dec,53);
-        str_lsb = [str_lsb,bin_str];
-        dec_point = dec_point + 16;
-        if ~strcmp(str_lsb(ext_len:ext_len+52),msg(ext_len:ext_len+52))
-            fprintf('本段秘密消息提取错误！');
-        end
-        ext_len = ext_len + 53;
-    elseif dec_point+15<n
-        dec = str2num(dec_msg(dec_point:dec_point+15));
-        bin_str = dec2bin(dec,m_start - ext_len);
-        str_lsb = [str_lsb,bin_str];
-        dec_point = dec_point + 16;
-        if ~strcmp(str_lsb(ext_len:m_start-1),msg(ext_len:m_start-1))
-            fprintf('本段秘密消息提取错误！');
-        end
-        ext_len = m_start;
-    else
-        dec_rem = n - dec_point;
-        bin_rem = floor(log2(10^dec_rem-1));
-        if ext_len+bin_rem>m_start
-            bin_rem = m_start - ext_len;
-        end
-        bin_str = dec2bin(str2num(dec_msg(dec_point:dec_point+dec_rem-1)),bin_rem);
-        str_lsb = [str_lsb,bin_str];
-        dec_point = n;
-        if ~strcmp(str_lsb(ext_len:ext_len + bin_rem-1),msg(ext_len:ext_len + bin_rem-1))
-            fprintf('本段秘密消息提取错误！');
-        end
-        ext_len = ext_len + bin_rem;
+
+% convert each 16-digit to 53-bit
+dec_point = 1;  
+while length(dec_msg(dec_point:))>15
+    dec = str2num(dec_msg(dec_point:dec_point+15));
+    bin_str = dec2bin(dec,53);
+    str_lsb = [str_lsb,bin_str];
+    dec_point = dec_point + 16;
+end
+bin_str = dec2bin(str2num(dec_msg(dec_point:)));
+str_lsb = [str_lsb,bin_str];
+
+% extracting messages from SiSDPs
+n = 1;
+for i=1:row_num
+    for j=1:col_num
+        stego_stc(n) = stego_point{i,j}(stc_plane) % stc_plane is the number of the SiSDPs
+        n = n +1;
     end
 end
-
-for j=1:ext_len-1
-    extr_msg(j) = uint8(str2double(str_lsb(j)));
-end
-%提取lsb部分嵌入的秘密消息
-
-error_bit = 0;
-for j=1:(m_start-1)
-    if extr_msg(j)~= uint8(str2double(msg(j)))
-        error_bit = error_bit + 1;
-    end
-end
-if error_bit==0
-    fprintf('秘密消息提取正确！');
-else
-    error_rate = error_bit/(m_start-1)*100;
-    fprintf('秘密消息提取错误比特率为%.2f%%,',error_rate);
-end
-
-psnr = coord_psnr(cover_p,stego_p,row_num,col_num,180,90);
-fprintf('PSNR为%.2f,',psnr);
-ed = Tra_ed(cover_p,stego_p,row_num);
-
-end
+bin_stcmsg = stc_ml_extract(stego_stc, n_msg_bits, h); 
+str_lsb = [str_lsb,bin_stcmsg];
 
 function [cover,costs] = extra_c(cell_p,dig_num,p,row_num,col_num,stc_sum)
-    costs = zeros(3,stc_sum,'single');
     s = 1;
     for i=1:row_num
         for j=1:col_num
-            if dig_num(s,2)>6
-                c = dig_num(s,1)+8;
-                value = str2double(cell_p{i,j}(c));
-            else
-                value = 0;
-            end
+            value = str2double(cell_p{i,j}(stc_plane)); % stc_plane is the number of the SiSDPs
             cover(1,s) = int32(value); %数字放入载体库
             if value==0 || value==9    %数字0和9，不嵌入。
-               costs(:,s) = [1e+5 0 1e+5];
+                costs(:,s) = [1e+5 0 1e+5];
             else
-               costs(1,s) = emb_distortion(p,7,i,j,-1);   %+1嵌入失真代价
-               costs(3,s) = emb_distortion(p,7,i,j,1);   %-1嵌入失真代价
+                costs(1,s) = emb_distortion(p,7,i,j,-1);   %+1嵌入失真代价
+                costs(3,s) = emb_distortion(p,7,i,j,1);   %-1嵌入失真代价
             end
             s = s + 1;
         end
     end
 end
        
-
+% emb_distortion is the distortion function
 function cost = emb_distortion(p,stc_k,r_num,c_num,sg)
-    a = 0.8;    %调节参数
+    bp = 0.8;    % bp is an adjustment parameter
     if(p(r_num,c_num)<0)
         abs_p = abs(p(r_num,c_num));
         sign = -1;
@@ -218,33 +126,12 @@ function cost = emb_distortion(p,stc_k,r_num,c_num,sg)
         abs_p = p(r_num,c_num);
         sign = 1;
     end
-    new = sign*(abs_p + sg * 10^(-stc_k));
-    if(mod(c_num,2) == 1)
-        point_emb = [new p(r_num,2)];   %-1嵌入后的新坐标点
-    else
-        point_emb = [p(r_num,1) new];
-    end
-    
-    [p_len,~] = size(p);
-    if(r_num == 1)
-        d = p(r_num+1,:) - p(r_num,:);
-        e = p(r_num+1,:) - point_emb;
-        x = dot(d,e);
-        y = sqrt(sum(d.^2)*sum(e.^2));
-        sigma = acos(x/y*a);  %嵌入后新旧向量夹角（与后坐标）弧度制
-        cost = rad2deg(sigma);
-    elseif(r_num == p_len)
-        b = p(r_num-1,:) - p(r_num,:);
-        c = p(r_num-1,:) - point_emb;
-        sigma = acos(dot(b,c)/sqrt(sum(b.^2)*sum(c.^2))*a); %嵌入后新旧向量夹角（与前坐标）弧度制
-        cost = rad2deg(sigma);
-    else
-        b = p(r_num-1,:) - p(r_num,:);
-        c = p(r_num-1,:) - point_emb;
-        sigma_front = acos(dot(b,c)/sqrt(sum(b.^2)*sum(c.^2))*a); %嵌入后新旧向量夹角（与前坐标）弧度制
-        d = p(r_num+1,:) - p(r_num,:);
-        e = p(r_num+1,:) - point_emb;
-        sigma_back = acos(dot(d,e)/sqrt(sum(d.^2)*sum(e.^2))*a);  %嵌入后新旧向量夹角（与后坐标）弧度制
-        cost = rad2deg(sigma_front + sigma_back);
-    end
+    new_coor = sign*(abs_p + sg * 10^(-stc_k)); % the new geo-coordinate after "±1" embedding
+    b = p(r_num-1,:) - p(r_num,:);
+    c = p(r_num-1,:) - point_emb;  % point_emb is the new point by updating new_coor
+    sigma_front = acos(dot(b,c)/sqrt(sum(b.^2)*sum(c.^2))*bp); 
+    d = p(r_num+1,:) - p(r_num,:);
+    e = p(r_num+1,:) - point_emb;
+    sigma_back = acos(dot(d,e)/sqrt(sum(d.^2)*sum(e.^2))*bp); 
+    cost = rad2deg(sigma_front + sigma_back);
 end
