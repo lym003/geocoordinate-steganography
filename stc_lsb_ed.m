@@ -43,56 +43,56 @@
         stc_embstr = [stc_embstr,int2str(stego(i))];
     end
 % update geo-coordinate after embedding process
-stego_str = [lsb_embstr,stc_embstr];
-stego_len = length(stego_str);
-while point<=stego_len
-    point = 1;  
-    for i=1:row_num
-        for j=1:col_num
-            coord_str = s_p{i,j};
-            coord_str(end_plane-lay+1) = stego_str(point);  % end_plane is the last digit plane of coord_str; lay is the number of RDPs
-            s_p{i,j} = coord_str;
-            point = point + 1;
+    stego_str = [lsb_embstr,stc_embstr];
+    stego_len = length(stego_str);
+    while point<=stego_len
+        point = 1;  
+        for i=1:row_num
+            for j=1:col_num
+                coord_str = s_p{i,j};
+                coord_str(end_plane-lay+1) = stego_str(point);  % end_plane is the last digit plane of coord_str; lay is the number of RDPs
+                s_p{i,j} = coord_str;
+                point = point + 1;
+            end
         end
+        lay = lay + 1;
     end
-    lay = lay + 1;
-end
         
 % the extracting process
 % stego_point is the processed point sequences from geographic data file
 % extracting messages from LSDPs
-k = 1; 
-n = 1;  
-while k <= lay_mlsb  % lay_mlsb is the number of LSDPs
+    k = 1; 
+    n = 1;  
+    while k <= lay_mlsb  % lay_mlsb is the number of LSDPs
+        for i=1:row_num
+            for j=1:col_num
+                ext_point = stego_point{i,j};
+                dec_msg(n) = ext_point(end_plane-k+1);
+                n = n + 1;
+            end
+        end
+        k = k + 1;
+    end
+% convert each 16-digit to 53-bit
+    dec_point = 1;  
+    while length(dec_msg(dec_point:))>15
+        dec = str2num(dec_msg(dec_point:dec_point+15));
+        bin_str = dec2bin(dec,53);
+        str_lsb = [str_lsb,bin_str];
+        dec_point = dec_point + 16;
+    end
+    bin_str = dec2bin(str2num(dec_msg(dec_point:)));
+    str_lsb = [str_lsb,bin_str];
+% extracting messages from SiSDPs
+    n = 1;
     for i=1:row_num
         for j=1:col_num
-            ext_point = stego_point{i,j};
-            dec_msg(n) = ext_point(end_plane-k+1);
-            n = n + 1;
+            stego_stc(n) = stego_point{i,j}(stc_plane) % stc_plane is the number of the SiSDPs
+            n = n +1;
         end
     end
-    k = k + 1;
-end
-% convert each 16-digit to 53-bit
-dec_point = 1;  
-while length(dec_msg(dec_point:))>15
-    dec = str2num(dec_msg(dec_point:dec_point+15));
-    bin_str = dec2bin(dec,53);
-    str_lsb = [str_lsb,bin_str];
-    dec_point = dec_point + 16;
-end
-bin_str = dec2bin(str2num(dec_msg(dec_point:)));
-str_lsb = [str_lsb,bin_str];
-% extracting messages from SiSDPs
-n = 1;
-for i=1:row_num
-    for j=1:col_num
-        stego_stc(n) = stego_point{i,j}(stc_plane) % stc_plane is the number of the SiSDPs
-        n = n +1;
-    end
-end
-bin_stcmsg = stc_ml_extract(stego_stc, n_msg_bits, h); 
-str_lsb = [str_lsb,bin_stcmsg];
+    bin_stcmsg = stc_ml_extract(stego_stc, n_msg_bits, h); 
+    str_lsb = [str_lsb,bin_stcmsg];
 
 % extracting elements from SiSDPs and computing distortion cost
 function [cover,costs] = extra_c(cell_p,dig_num,p,row_num,col_num,stc_sum)
