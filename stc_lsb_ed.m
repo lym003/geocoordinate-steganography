@@ -1,6 +1,6 @@
 % The significant digit of geo-coordinate is more than 8
 % construct cover element sequences
-% s_p is the geo-coordinate sequence; point_num is the number of digits; bp is the embedding ratio;
+% s_p is the geo-coordinate sequence; point_num is the number of digits;
 % dig_num is used to store the digit number of each part in the geo-coordinate
     stc_len = 1;
     lsb_len = fra_len - 7;
@@ -8,6 +8,7 @@
     dig_num(,2) = fra_len; % fra_len is the digit number of fraction part
     stc_len = 1; % stc_len is the digit number of SiSDPs
     dig_num(,3) = stc_len; 
+    stc_sum = stc_sum + stc_len;
     lsb_len = fra_len - 7; % lsb_len is the digit number of LSDPs
     dig_num(,4) = lsb_len;
     lsb_sum = lsb_sum + lsb_len;
@@ -36,23 +37,19 @@
     lsb_embstr = [lsb_embstr,lsb_remain_dec];
 
 % the STC adaptive algorithm
+% bp is the embedding ratio;
+    emb_len = stc_emb_len;
+    [cover,costs] = extra_c(p,dig_num,cover_p,row_num,col_num,stc_sum); % extract cover sequence of SiSDPs
+    [d stego n_msg_bits l] = stc_pm1_pls_embed(cover, costs, stc_m, h); % embed message with STC algorithm
+    for i=1:stc_sum
+        stc_embstr = [stc_embstr,int2str(stego(i))];
+    end
 
-        stc_emb_len = floor(stc_sum*bp);   %stc部分可以嵌入的秘密信息长度
-        if m_start+stc_emb_len-1<=m_len
-            emb_len = stc_emb_len;
-        else
-            emb_len = m_len-m_start+1;  %剩余位数小于可嵌秘密信息长度
-        end
-        [cover,costs] = extra_c(p,dig_num,cover_p,row_num,col_num,stc_sum);   %提取stc部分载体
-        for j=1:emb_len
-            stc_m(j) = uint8(str2double(msg(m_start+j-1)));
-        end
-        [d stego n_msg_bits l] = stc_pm1_pls_embed(cover, costs, stc_m, h); % embed message
-        for j=1:emb_len
-            if stego(j)<0 || stego(j)>9
-                fprintf('stego超出0-9！\n');
-            end
-        end
+% update geo-coordinate after embedding process
+stego_str = [lsb_embstr,stc_embstr];
+coord_str = s_p{i,j};
+
+
         m_start = m_start + emb_len;
         extr_msg(m_start-emb_len:m_start-1) = stc_ml_extract(stego, n_msg_bits, h); % extract message
         flag = 0;
@@ -61,14 +58,8 @@ end
 %fprintf('实际嵌入%d位，',m_start-1);
 fprintf('单位坐标嵌入%.2f位，',(m_start-1)/row_num/col_num);
 
-%更新载密坐标点
-stc_embstr = '';
-if exist('stego','var')
-    for i=1:stc_sum
-        stc_embstr = [stc_embstr,int2str(stego(i))];
-    end
-end
-stego_str = [lsb_embstr,stc_embstr];
+
+
 stego_len = length(stego_str);
 point = 1;  %载密元素（lsb+stc）序列中元素序号
 lay = 1;
