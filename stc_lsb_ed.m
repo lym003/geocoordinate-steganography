@@ -1,7 +1,7 @@
 % The significant digit of geo-coordinate is more than 8
-% construct cover element sequences
 % s_p is the geo-coordinate sequence; point_num is the number of digits; msg is the secret messages after encrypting
 % dig_num is used to store the digit number of each part in the geo-coordinate
+% construct cover element sequences
     stc_len = 1;
     lsb_len = fra_len - 7;
     dig_num(,1) = int_len; % int_len is the digit number of integer part
@@ -23,8 +23,7 @@
             dec_str = ['0',dec_str];
         end
     end
-    lsb_embstr = [lsb_embstr,dec_str]; 
-        
+    lsb_embstr = [lsb_embstr,dec_str];        
     lsb_remain = mod(lsb_sum,16);  
     lsb_remain_bin = floor(log2(10^lsb_remain-1));
     lsb_remain_dec = int2str(bin2dec(msg(m_start:m_start+lsb_remain_bin-1)));
@@ -35,16 +34,14 @@
         end
     end
     lsb_embstr = [lsb_embstr,lsb_remain_dec];
-
 % the STC adaptive algorithm
 % bp is the embedding ratio;
     emb_len = stc_emb_len;
-    [cover,costs] = extra_c(p,dig_num,cover_p,row_num,col_num,stc_sum); % extract cover sequence of SiSDPs
+    [cover,costs] = extra_c(s_p,dig_num,cover_p,row_num,col_num,stc_sum); % extract cover sequence of SiSDPs
     [d stego n_msg_bits l] = stc_pm1_pls_embed(cover, costs, stc_m, h); % embed message with STC algorithm
     for i=1:stc_sum
         stc_embstr = [stc_embstr,int2str(stego(i))];
     end
-
 % update geo-coordinate after embedding process
 stego_str = [lsb_embstr,stc_embstr];
 stego_len = length(stego_str);
@@ -76,7 +73,6 @@ while k <= lay_mlsb  % lay_mlsb is the number of LSDPs
     end
     k = k + 1;
 end
-
 % convert each 16-digit to 53-bit
 dec_point = 1;  
 while length(dec_msg(dec_point:))>15
@@ -87,7 +83,6 @@ while length(dec_msg(dec_point:))>15
 end
 bin_str = dec2bin(str2num(dec_msg(dec_point:)));
 str_lsb = [str_lsb,bin_str];
-
 % extracting messages from SiSDPs
 n = 1;
 for i=1:row_num
