@@ -99,13 +99,14 @@ end
 bin_stcmsg = stc_ml_extract(stego_stc, n_msg_bits, h); 
 str_lsb = [str_lsb,bin_stcmsg];
 
+% extracting elements from SiSDPs and computing distortion cost
 function [cover,costs] = extra_c(cell_p,dig_num,p,row_num,col_num,stc_sum)
     s = 1;
     for i=1:row_num
         for j=1:col_num
             value = str2double(cell_p{i,j}(stc_plane)); % stc_plane is the number of the SiSDPs
-            cover(1,s) = int32(value); %数字放入载体库
-            if value==0 || value==9    %数字0和9，不嵌入。
+            cover(1,s) = int32(value); 
+            if value==0 || value==9    
                 costs(:,s) = [1e+5 0 1e+5];
             else
                 costs(1,s) = emb_distortion(p,7,i,j,-1);   %+1嵌入失真代价
