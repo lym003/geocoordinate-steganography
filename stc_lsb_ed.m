@@ -17,15 +17,15 @@
 % the MLSBR algorithm
     dec_str = int2str(bin2dec(msg(m_start:m_start+52)));
     dec_str_len = length(dec_str);
-    if dec_str_len<16   %53位二进制表示十进制位数不足16位的，前面补足0
+    if dec_str_len<16   % padding zeros to the front if dec_str_len less than 16 digits
         add_len = 16 - dec_str_len;
         for i=1:add_len
             dec_str = ['0',dec_str];
         end
     end
-    lsb_embstr = [lsb_embstr,dec_str];    %将lsb每一组载密（16位）合成总的字符串
+    lsb_embstr = [lsb_embstr,dec_str]; 
         
-    lsb_remain = mod(lsb_sum,16);  %16个十进制一组嵌入后，lsb部分不足一组的十进制位数
+    lsb_remain = mod(lsb_sum,16);  
     lsb_remain_bin = floor(log2(10^lsb_remain-1));
     lsb_remain_dec = int2str(bin2dec(msg(m_start:m_start+lsb_remain_bin-1)));
     if length(lsb_remain_dec)<lsb_remain
@@ -49,7 +49,7 @@
 stego_str = [lsb_embstr,stc_embstr];
 stego_len = length(stego_str);
 while point<=stego_len
-    point = 1;  %载密元素（lsb+stc）序列中元素序号
+    point = 1;  
     for i=1:row_num
         for j=1:col_num
             coord_str = s_p{i,j};
@@ -109,8 +109,8 @@ function [cover,costs] = extra_c(cell_p,dig_num,p,row_num,col_num,stc_sum)
             if value==0 || value==9    
                 costs(:,s) = [1e+5 0 1e+5];
             else
-                costs(1,s) = emb_distortion(p,7,i,j,-1);   %+1嵌入失真代价
-                costs(3,s) = emb_distortion(p,7,i,j,1);   %-1嵌入失真代价
+                costs(1,s) = emb_distortion(p,7,i,j,-1);   % the distortion cost with "+1" embedding
+                costs(3,s) = emb_distortion(p,7,i,j,1);   % the distortion cost with "-1" embedding
             end
             s = s + 1;
         end
